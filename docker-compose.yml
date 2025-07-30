@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: registry.gitlab.com/duyhungfa102/learn-vocab-english:latest
+    ports:
+      - "3000:3000"
+
+# To build and push the image to GitLab Registry:
+# 1. Login to your GitLab Registry:
+#    docker login registry.gitlab.com -u <your-gitlab-username> -p <your-access-token>
+# 2. Build and push the image:
+#    docker-compose build && docker-compose push
