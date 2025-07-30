@@ -1,0 +1,104 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  LATEST_TAG: $CI_REGISTRY_IMAGE:latest
+
+# Build stage
+build:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - docker build -t $IMAGE_TAG .
+    - docker tag $IMAGE_TAG $LATEST_TAG
+    - docker push $IMAGE_TAG
+    - docker push $LATEST_TAG
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# Test stage (optional)
+test:
+  stage: test
+  image: node:20-alpine
+  cache:
+    paths:
+      - node_modules/
+  before_script:
+    - npm ci
+  script:
+    - npm run lint
+    - npm run build
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# Deploy to staging
+deploy_staging:
+  stage: deploy
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - docker pull $IMAGE_TAG
+    - docker stop vocab-practice-staging || true
+    - docker rm vocab-practice-staging || true
+    - docker run -d 
+        --name vocab-practice-staging 
+        --restart unless-stopped 
+        -p 3001:3000 
+        -e NODE_ENV=production 
+        -e NEXT_TELEMETRY_DISABLED=1 
+        $IMAGE_TAG
+  environment:
+    name: staging
+    url: http://staging.vocab.example.com
+  only:
+    - develop
+
+# Deploy to production
+deploy_production:
+  stage: deploy
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - docker pull $IMAGE_TAG
+    - docker-compose -f docker-compose.prod.yml down || true
+    - CI_COMMIT_SHA=$CI_COMMIT_SHA docker-compose -f docker-compose.prod.yml up -d
+  environment:
+    name: production
+    url: https://vocab.example.com
+  when: manual
+  only:
+    - main
+
+# Cleanup old images
+cleanup:
+  stage: deploy
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - docker system prune -f
+    - docker image prune -a -f --filter "until=72h"
+  when: manual
+  only:
+    - main

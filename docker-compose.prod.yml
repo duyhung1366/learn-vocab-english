@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  vocab-practice:
+    image: registry.gitlab.com/duyhungfa102/learn-vocab-english:${CI_COMMIT_SHA:-latest}
+    container_name: vocab-practice-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - vocab-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vocab-practice.rule=Host(`vocab.example.com`)"
+      - "traefik.http.routers.vocab-practice.tls=true"
+      - "traefik.http.routers.vocab-practice.tls.certresolver=letsencrypt"
+      - "traefik.http.services.vocab-practice.loadbalancer.server.port=3000"
+
+networks:
+  vocab-network:
+    external: true
