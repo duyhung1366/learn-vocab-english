@@ -3,17 +3,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - NODE_ENV=production
     image: registry.gitlab.com/duyhungfa102/learn-vocab-english:latest
     container_name: vocab-practice-app
     ports:
-      - "3002:3000"
+      - "3000:3000"
     environment:
       - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
-      - PORT=3000
-      - HOSTNAME=0.0.0.0
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
