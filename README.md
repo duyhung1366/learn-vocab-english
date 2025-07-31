@@ -68,12 +68,12 @@ docker push registry.gitlab.com/duyhungfa102/learn-vocab-english:latest
 
 For development:
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 For production:
 ```bash
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ## GitLab CI/CD

@@ -52,7 +52,7 @@ build: validate-version ## Build Docker image using Docker Compose
 	@echo "   Date: $(BUILD_DATE)"
 	@echo "   Branch: $(GIT_BRANCH)"
 	@echo ""
-	docker-compose -f $(COMPOSE_FILE) build --no-cache vocab-practice
+	docker compose -f $(COMPOSE_FILE) build --no-cache vocab-practice
 	@if [ "$(VERSION)" != "latest" ]; then \
 		docker tag $(IMAGE_NAME):latest $(IMAGE_NAME):$(VERSION); \
 		echo "🏷️  Tagged as: $(IMAGE_NAME):$(VERSION)"; \
@@ -193,28 +193,28 @@ login: ## Login to GitLab Registry
 
 dev: ## Start development environment
 	@echo "🚀 Starting development environment..."
-	docker-compose -f $(COMPOSE_FILE) up -d
+	docker compose -f $(COMPOSE_FILE) up -d
 	@echo "✅ Development environment started!"
 	@echo "🌐 Application: http://localhost:3002"
 	@echo "❤️  Health check: http://localhost:3002/api/health"
 
 prod: ## Start production environment
 	@echo "🚀 Starting production environment..."
-	docker-compose -f $(COMPOSE_PROD_FILE) up -d
+	docker compose -f $(COMPOSE_PROD_FILE) up -d
 	@echo "✅ Production environment started!"
 
 stop: ## Stop all containers
 	@echo "🛑 Stopping containers..."
-	docker-compose -f $(COMPOSE_FILE) down || true
-	docker-compose -f $(COMPOSE_PROD_FILE) down || true
+	docker compose -f $(COMPOSE_FILE) down || true
+	docker compose -f $(COMPOSE_PROD_FILE) down || true
 	@echo "✅ Containers stopped!"
 
 logs: ## Show container logs
-	docker-compose -f $(COMPOSE_FILE) logs -f vocab-practice
+	docker compose -f $(COMPOSE_FILE) logs -f vocab-practice
 
 clean: ## Clean up Docker images and containers
 	@echo "🧹 Cleaning up..."
-	docker-compose -f $(COMPOSE_FILE) down --rmi all --volumes --remove-orphans || true
+	docker compose -f $(COMPOSE_FILE) down --rmi all --volumes --remove-orphans || true
 	docker system prune -f
 	@echo "✅ Cleanup completed!"
 

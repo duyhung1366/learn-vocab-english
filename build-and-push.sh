@@ -20,7 +20,7 @@ echo ""
 
 # Step 1: Build the image using Docker Compose
 echo "🔨 Step 1: Building Docker image..."
-docker-compose build --no-cache vocab-practice
+docker compose build --no-cache vocab-practice
 
 # Step 2: Tag the image with additional tags if needed
 echo "🏷️  Step 2: Tagging image..."
